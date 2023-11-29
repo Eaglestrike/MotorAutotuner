@@ -5,6 +5,7 @@
 #pragma once
 
 #include <frc/TimedRobot.h>
+#include <Util/MotorAutotuner.h>
 
 class Robot : public frc::TimedRobot {
  public:

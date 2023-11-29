@@ -26,34 +26,54 @@ class MotorAutotuner{
 
         enum State{
             IDLE,
+            FINDING_MAX_VEL, //Automatically find max vel
             TUNING,
-            RECENTER_FROM_MAX,
-            RECENTER_FROM_MIN
+            RECENTER,
+            CALCULATING
         };
 
         MotorAutotuner(std::string name, bool positionUnique, double maxVolts);
 
+        void Start();
         void SetCurrentPose(Poses::Pose1D pose);
         void SetCurrentPose(Poses::MotorPose pose);
         double GetVoltage();
+        void Finish();
+        void Pause();
 
         void SetMin(double min);
         void SetMax(double max);
         void AddBounds(double pos);
+        void SetDegreeTestingBounds(double degree);
+
+        void SetDensity(int density);
 
     private:
         Config config_;
 
         State state_;
-
+        void StateCalculations();
+        
         Poses::MotorPose currPose_;
+        Poses::MotorPose prevPose_;
+        Poses::MotorPose targetPose_;
 
-        double degreeTestingBounds_ = 10.0; //Testing will be 1/10th the way from the absolute bounds
+        bool foundMaxVel_;
+        double upVel_, downVel_;
+        std::vector<Poses::MotorPose> velFindingPoses_;
+        double FindVelRange();
+
+        double Tune();
+
+        double Recenter();
+
+        double degreeTestingBounds_ = 12.0; //Testing will padded 1/12th the way from the absolute bounds
         Bounds bounds_;
         void CalcBounds();
 
         std::unordered_map<Coordinate, std::vector<Poses::MotorPose>, pair_hash> data_; // Coordinate -> vector of poses
-        double gridSizePos; //Size of each coordinate
-        double gridSizeVel;
+        int density_ = 50; //Number of cells on each axis
+        double gridSizePos_; //Size of each coordinate
+        double gridSizeVel_;
         Coordinate GetCoordinate(Poses::MotorPose pose);
 };
